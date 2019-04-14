@@ -27,6 +27,7 @@ dependencies:
   image_picker: ^0.4.1
 
 dev_dependencies:
+  path_provider: ^0.4.1
   firebase_storage:
   flutter_test:
     sdk: flutter
