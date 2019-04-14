@@ -7,7 +7,10 @@ import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:async';
+import 'package:flutter_mailer/flutter_mailer.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
+//import 'package:flutter_email_sender/flutter_email_sender.dart';
 
 class consultScreen extends StatefulWidget {
   @override
@@ -26,8 +29,8 @@ class fileUtilities {
   static Future<File> saveToFile(String data) async{
     final file = await getFile;
     final modified = file.writeAsString(data);
-    final StorageReference firebaseStorageRef = FirebaseStorage.instance.ref().child('email.txt');
-    final StorageUploadTask task = firebaseStorageRef.putFile(await modified);
+    //final StorageReference firebaseStorageRef = FirebaseStorage.instance.ref().child('email.txt');
+    //final StorageUploadTask task = firebaseStorageRef.putFile(await modified);
     return modified;
   }
 }
@@ -37,6 +40,27 @@ class CameraApp extends State<consultScreen> {
     _write(value);
   }
   File _image;
+  String imagePath;
+  
+  void _showDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Message Sent To Doctor'),
+        content: new Text('A docotor will evaluate a diagnosis'),
+        actions: <Widget>[
+          new FlatButton(
+            child: Text("Close"),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          )
+        ],
+      );
+      }
+    );
+  }
   // CameraApp(FirebaseUser user) {
   //   this.firebaseUser = user;
   // }
@@ -45,15 +69,18 @@ class CameraApp extends State<consultScreen> {
     var image = await ImagePicker.pickImage(source: ImageSource.camera);
     setState(() {
       _image = image;
+      imagePath = _image.path;
     });
   }
   final myController = TextEditingController ();
+  final myController1 = TextEditingController ();  
+  final myController2 = TextEditingController ();
+  final _random = new Random();
+  int _next() => 0 + _random.nextInt(1000-0);
+  // final myController1 = TextEditingController ();
+  // final myController2 = TextEditingController ();
   @override
   Widget build(BuildContext context) {
-    String fileContents = "";
-    void onPressed() {
-
-    }
     // TODO: implement build
     var cameraWidget = new Center(
       child: ListView(
@@ -71,8 +98,40 @@ class CameraApp extends State<consultScreen> {
             color: Colors.blue,
             child: Text("Capture Picture"),
           ),
-          attributeBuilder("Symptoms", ""),
-          attributeBuilder("Current Medications", ""),
+          Container(
+            width: MediaQuery.of(context).size.width*0.5,  
+            child: Column(
+            children: <Widget>[
+              Text(
+                'Symptoms',
+                style: TextStyle(
+                color: Colors.blue,
+              ),
+            ),
+          TextField (
+            textAlign: TextAlign.center,
+            controller: myController2,            
+              )
+            ],
+            ),
+          ),
+          Container(
+            width: MediaQuery.of(context).size.width*0.5,  
+            child: Column(
+            children: <Widget>[
+              Text(
+                'Medications',
+                style: TextStyle(
+                color: Colors.blue,
+              ),
+            ),
+          TextField (
+            textAlign: TextAlign.center,
+            controller: myController1,            
+              )
+            ],
+            ),
+          ),
           Container(
             width: MediaQuery.of(context).size.width*0.5,  
             child: Column(
@@ -94,6 +153,18 @@ class CameraApp extends State<consultScreen> {
             "Submit",
             onPressed: () {
               fileUtilities.saveToFile(myController.text);
+              final MailOptions email = MailOptions (
+                 body: "The patients email address is " + myController.text + ". " + "The patient has taken the following medication " + myController2.text + ". " + "The patient has the following symptoms " + myController1.text,
+                 subject: "Doctor Consultation",
+                 recipients: ["drsudhishv@gmail.com"],
+                 isHTML: true,
+                 attachments: [imagePath]
+               );
+               
+              final StorageReference firebaseStorageRef = FirebaseStorage.instance.ref().child(_next().toString()+'.jpg');
+              final StorageUploadTask task = firebaseStorageRef.putFile(_image);
+               FlutterMailer.send(email);
+               _showDialog();
             },
             child: Text('Submit'),
             color: Colors.blue,
@@ -102,8 +173,6 @@ class CameraApp extends State<consultScreen> {
       )
       
     );
-    final StorageReference firebaseStorageRef = FirebaseStorage.instance.ref().child('myimage1.jpg');
-    final StorageUploadTask task = firebaseStorageRef.putFile(_image);
     return cameraWidget;
   }
 } 

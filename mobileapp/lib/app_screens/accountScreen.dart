@@ -67,11 +67,16 @@ class accountWidget extends StatelessWidget {
             ),
             Container(
               height:MediaQuery.of(context).size.height*0.4,
-              child: ListView.builder(
-                itemCount: 20,
-                itemBuilder: (BuildContext ctxt, int index) {
-                  return historyUIComponent(index);
-                }
+              child: ListView (
+                children: <Widget>[
+                  historyUIComponent("08/23/2017", "Skin Rash"),
+                  historyUIComponent("09/16/2017", "Burn on skin"),
+                  historyUIComponent("10/11/2017", "Skin Rash returned"),
+                  historyUIComponent("01/05/2018", "Alergic reaction to peanuts"),
+                  historyUIComponent("04/30/2018", "Pollen reaction from spring"),
+                  historyUIComponent("10/18/2018", "Skin acting up again"),
+                  historyUIComponent("01/23/2019", "Weird rash on skin"),
+                ],                
               )
             ),            
           ]          
@@ -81,8 +86,11 @@ class accountWidget extends StatelessWidget {
   }
 }
 class historyUIComponent extends StatelessWidget {
-  int currIndex;
-  historyUIComponent(this.currIndex);
+  
+  String date;
+  String reason;
+  historyUIComponent(this.date, this.reason);
+  
 
   @override
   Widget build(BuildContext context) {
@@ -90,8 +98,8 @@ class historyUIComponent extends StatelessWidget {
     return ListTile (
       onTap: (){},
       leading: Icon(Icons.save),
-      title: Text("dd/mm/yyyy"),
-      subtitle: Text("your reason for visit will go here"),
+      title: Text(date),
+      subtitle: Text(reason),
       trailing: Icon(Icons.sentiment_satisfied),
     );
   }
